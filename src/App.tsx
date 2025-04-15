@@ -1,25 +1,51 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
+
+function isBetween(num: number, min: number, max: number)
+{
+  if (min <= num && num <= max)
+  {
+    return true
+  }
+  return false
+}
 
 function App() {
 
   const [recording, setRecording] = useState(false)
   const [timeoutID, setTimeoutID] = useState(0)
   const [height, setHeight] = useState(0)
+  const timingRef = useRef<number | null>(null)
+  const [hasRecordedInitialTime, setHasRecordedInitialTime] = useState(false)
 
   useEffect(() => {
     function handleMotion(e: DeviceMotionEvent)
     {
-      if (e.acceleration)
+      if (e.accelerationIncludingGravity)
       {
-        setHeight(e.acceleration.y as any)
+        const gForce = Math.sqrt(e.accelerationIncludingGravity.x! ** 2 + e.accelerationIncludingGravity.y! ** 2 + e.accelerationIncludingGravity.z! ** 2) / 9.81
+        if (!hasRecordedInitialTime && isBetween(gForce, -0.3, 0.3))
+        {
+          timingRef.current = performance.now()
+          setHasRecordedInitialTime(true)
+        }
+        if (hasRecordedInitialTime && !isBetween(gForce, -0.3, 0.3))
+        {
+          setHeight((performance.now() - (timingRef as any).current) / 1000)
+          setHasRecordedInitialTime(false)
+          setRecording(false)
+        }
       }
     }
 
     if (recording)
     {
       window.addEventListener("devicemotion", handleMotion)
-      setTimeoutID(window.setTimeout(() => {setRecording(false)}, 8000))
+      setTimeoutID(window.setTimeout(() => {
+        setRecording(false)
+        setHasRecordedInitialTime(false)
+        alert("Error: Did Not Throw!")
+      }, 8000))
     }
     return () => {
       window.removeEventListener("devicemotion", handleMotion)
@@ -48,6 +74,7 @@ function App() {
       }
     } else {
       setRecording(false)
+      setHasRecordedInitialTime(false)
     }
   }
 

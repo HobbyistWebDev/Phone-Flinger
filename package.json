@@ -1,6 +1,6 @@
 {
-  "name": "phone-flinger",
   "homepage": "https://HobbyistWebDev.github.io/Phone-Flinger",
+  "name": "phone-flinger",
   "private": false,
   "version": "0.0.0",
   "type": "module",
