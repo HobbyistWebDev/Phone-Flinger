@@ -32,3 +32,8 @@
         width: 80vw;
     }
 }
+
+#highscore {
+    font-size: medium;
+    margin: 5px;
+}

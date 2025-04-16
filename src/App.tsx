@@ -9,11 +9,12 @@ function App() {
   const timeIntervalID = useRef<number>(0)
   const [height, setHeight] = useState(0)
   const timingRef = useRef<number | null>(null)
-  const isFallingRef = useRef<Boolean>(false)
+  const isFallingRef = useRef<boolean>(false)
   const [progressBarValue, setProgressBarValue] = useState(0)
   const timerValue = useRef<number>(0)
   const timerDuration: number = 8000
   const [textValue, setTextValue] = useState<number>(8)
+  const [highscore, setHighscore] = useState<number>(0)
 
   function stopRecording()
   {
@@ -30,6 +31,12 @@ function App() {
   }
 
   useEffect(() => {
+
+    if (localStorage.getItem("highscore"))
+    {
+      setHighscore(Number(localStorage.getItem("highscore")))
+    }
+
     function handleMotion(e: DeviceMotionEvent)
     {
       if (e.accelerationIncludingGravity)
@@ -40,9 +47,16 @@ function App() {
           timingRef.current = performance.now()
           isFallingRef.current = true
         }
-        if (isFallingRef.current && gForce > 3)
+        if (isFallingRef.current && gForce > 1.5)
         {
-          setHeight(0.5 * 32.174 * ((performance.now() - (timingRef as any).current) / 1000) ** 2)
+          const calculatedHeight = (0.5 * 32.174 * ((performance.now() - (timingRef as any).current) / 1000) ** 2) / 2
+          setHeight(calculatedHeight)
+          stopRecording()
+          if (calculatedHeight > Number(localStorage.getItem("highscore")))
+          {
+            localStorage.setItem("highscore", calculatedHeight.toString())
+            setHighscore(Number(localStorage.getItem("highscore")))
+          }
         }
       }
     }
@@ -72,6 +86,8 @@ function App() {
         timeIntervalID.current = 0
 
         timerValue.current = 0
+        setTextValue(0)
+        setProgressBarValue(1)
       }
     }
   }, [recording])
@@ -100,6 +116,7 @@ function App() {
     <h6 id='title'>Phone Flipper</h6>
     <ProgressBar value={progressBarValue} size={200} width={15} text={textValue.toFixed(2) + "s"}/>
     <h6 id="height">{height.toFixed(2) + " ft"}</h6>
+    <p id="highscore">{"HIGHSCORE: " + highscore.toFixed(2) + " ft"}</p>
     <button id='record' onClick={handleToggle}>
       {recording ? "STOP" : "BEGIN"}
     </button>
