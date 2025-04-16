@@ -1,22 +1,33 @@
 import { useState, useEffect, useRef } from 'react'
+import {ProgressBar} from './ProgressBar'
 import './App.css'
-
-function isBetween(num: number, min: number, max: number)
-{
-  if (min <= num && num <= max)
-  {
-    return true
-  }
-  return false
-}
 
 function App() {
 
   const [recording, setRecording] = useState(false)
-  const [timeoutID, setTimeoutID] = useState(0)
+  const timeoutID = useRef<number>(0)
+  const timeIntervalID = useRef<number>(0)
   const [height, setHeight] = useState(0)
   const timingRef = useRef<number | null>(null)
-  const [hasRecordedInitialTime, setHasRecordedInitialTime] = useState(false)
+  const isFallingRef = useRef<Boolean>(false)
+  const [progressBarValue, setProgressBarValue] = useState(0)
+  const timerValue = useRef<number>(0)
+  const timerDuration: number = 8000
+  const [textValue, setTextValue] = useState<number>(8)
+
+  function stopRecording()
+  {
+    isFallingRef.current = false
+    setRecording(false)
+    timingRef.current = null
+  }
+
+  function startRecording()
+  {
+    setProgressBarValue(0)
+    setTextValue(8)
+    setRecording(true)
+  }
 
   useEffect(() => {
     function handleMotion(e: DeviceMotionEvent)
@@ -24,16 +35,14 @@ function App() {
       if (e.accelerationIncludingGravity)
       {
         const gForce = Math.sqrt(e.accelerationIncludingGravity.x! ** 2 + e.accelerationIncludingGravity.y! ** 2 + e.accelerationIncludingGravity.z! ** 2) / 9.81
-        if (!hasRecordedInitialTime && isBetween(gForce, -0.3, 0.3))
+        if (!isFallingRef.current && gForce < 0.1)
         {
           timingRef.current = performance.now()
-          setHasRecordedInitialTime(true)
+          isFallingRef.current = true
         }
-        if (hasRecordedInitialTime && !isBetween(gForce, -0.3, 0.3))
+        if (isFallingRef.current && gForce > 3)
         {
-          setHeight((performance.now() - (timingRef as any).current) / 1000)
-          setHasRecordedInitialTime(false)
-          setRecording(false)
+          setHeight(0.5 * 32.174 * ((performance.now() - (timingRef as any).current) / 1000) ** 2)
         }
       }
     }
@@ -41,18 +50,28 @@ function App() {
     if (recording)
     {
       window.addEventListener("devicemotion", handleMotion)
-      setTimeoutID(window.setTimeout(() => {
-        setRecording(false)
-        setHasRecordedInitialTime(false)
-        alert("Error: Did Not Throw!")
-      }, 8000))
+      timeoutID.current = window.setTimeout(() => {
+        stopRecording()
+      }, timerDuration)
+
+      timeIntervalID.current = window.setInterval(() => {
+        timerValue.current += 50
+        setProgressBarValue(timerValue.current / timerDuration)
+        setTextValue((timerDuration - timerValue.current) / 1000)
+      }, 50)
+
     }
     return () => {
       window.removeEventListener("devicemotion", handleMotion)
-      if (timeoutID != 0)
+      if (timeoutID.current != 0 && timeIntervalID.current != 0)
       {
-        window.clearTimeout(timeoutID)
-        setTimeoutID(0)
+        window.clearTimeout(timeoutID.current)
+        timeoutID.current = 0
+        
+        window.clearInterval(timeIntervalID.current)
+        timeIntervalID.current = 0
+
+        timerValue.current = 0
       }
     }
   }, [recording])
@@ -66,23 +85,23 @@ function App() {
         (DeviceMotionEvent as any).requestPermission().then((result: PermissionState) => {
           if (result === "granted")
           {
-            setRecording(true)
+            startRecording()
           }
         })
       } else {
-        setRecording(true)
+        startRecording()
       }
     } else {
-      setRecording(false)
-      setHasRecordedInitialTime(false)
+      stopRecording()
     }
   }
 
   return <div id='App'>
     <h6 id='title'>Phone Flipper</h6>
-    <p>{height}</p>
+    <ProgressBar value={progressBarValue} size={200} width={15} text={textValue.toFixed(2) + "s"}/>
+    <h6 id="height">{height.toFixed(2) + " ft"}</h6>
     <button id='record' onClick={handleToggle}>
-      {recording ? "Stop" : "Begin"}
+      {recording ? "STOP" : "BEGIN"}
     </button>
   </div>
 }

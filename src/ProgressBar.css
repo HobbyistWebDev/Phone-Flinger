@@ -1,0 +1,13 @@
+circle {
+    transform: rotate(-90deg);
+    transform-origin: center;
+}
+
+.valueBar {
+    transition: stroke-dashoffset 50ms linear
+}
+
+text {
+    font-weight: bold;
+    font-size: 45px;
+}

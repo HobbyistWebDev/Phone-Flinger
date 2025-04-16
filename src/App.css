@@ -9,12 +9,26 @@
 
 #record {
     height: 75px;
-    width: 400px;
+    width: 30vw;
     min-width: 200px;
     font-size: 45px;
+    background-color: white;
+    border: 0;
+    border-radius: 20px;
 }
 
 #title {
     font-size: 50px;
     margin: 20px;
+}
+
+#height {
+    font-size: 40px;
+    margin: 10px;
+}
+
+@media (max-width: 480px) {
+    #record {
+        width: 80vw;
+    }
 }
