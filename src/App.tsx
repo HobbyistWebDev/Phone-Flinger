@@ -49,7 +49,7 @@ function App() {
         }
         if (isFallingRef.current && gForce > 1.5)
         {
-          const calculatedHeight = (0.5 * 32.174 * ((performance.now() - (timingRef as any).current) / 1000) ** 2) / 2
+          const calculatedHeight = (0.5 * 32.174 * ((performance.now() - (timingRef as any).current) / 2000) ** 2)
           setHeight(calculatedHeight)
           stopRecording()
           if (calculatedHeight > Number(localStorage.getItem("highscore")))

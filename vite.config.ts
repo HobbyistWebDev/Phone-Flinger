@@ -8,7 +8,7 @@ const manifestForPlugin = {
   manifest:{
     name:"Phone Flipper",
     short_name:"Phone Flipper",
-    description:"Phone Flipper",
+    description:"PWA that tests how high you can throw your phone!",
     icons:[{
         src: '/Phone-Flinger/logo.svg',
         sizes:"48x48 72x72 96x96 128x128 256x256 512x512",
